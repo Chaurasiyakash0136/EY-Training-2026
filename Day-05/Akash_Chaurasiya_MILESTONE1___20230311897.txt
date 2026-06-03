@@ -1,0 +1,178 @@
+DAY 5 ASSIGNMENT SUBMISSION
+END-TO-END PDF PROCESSING PIPELINE
+
+=== SECTION A — PROBLEM STATEMENT ===
+
+This pipeline demonstrates a simple end-to-end document processing workflow using Python, pandas, Groq LLM, and matplotlib. The first stage, Ingest, reads a PDF file and extracts text from all pages using PyMuPDF. The Structure stage converts the extracted content into a structured pandas DataFrame containing page-level metadata such as page number, word count, and preview text. In the Store stage, the structured data is saved as CSV and JSON files for persistence and future processing. The Summarise stage sends the combined text to the Groq API to generate concise insights using an LLM. Finally, the Visualise stage creates a bar chart showing word distribution across pages for quick analysis.
+
+=== SECTION B — ARCHITECTURE DIAGRAM ===
+
+report.pdf
+↓
+[Ingest PDF with PyMuPDF]
+↓
+Raw Page Text List
+↓
+[Structure with pandas DataFrame]
+↓
+Structured Data (page_no, word_count, first_50_chars)
+↓
+[Store as CSV + JSON]
+↓
+Stored Files in output/
+↓
+[Summarise with Groq LLM]
+↓
+3-Point Summary
+↓
+[Visualise with matplotlib]
+↓
+Word Count Bar Chart
+
+=== SECTION C — CODE BLOCKS ===
+
+```python
+import os
+import logging
+import fitz
+import pandas as pd
+import matplotlib.pyplot as plt
+from groq import Groq
+
+# --------------------------------------------------
+# LOGGING SETUP
+# --------------------------------------------------
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
+
+logging.info("Pipeline started")
+```
+
+```python
+# --------------------------------------------------
+# INGEST + EXTRACT
+# --------------------------------------------------
+
+pdf_path = "./data/report.pdf"
+
+doc = fitz.open(pdf_path)
+
+pages_text = []
+
+for page_num, page in enumerate(doc, start=1):
+    text = page.get_text()
+    pages_text.append(text)
+
+    logging.info(f"Extracted text from page {page_num}")
+
+doc.close()
+
+logging.info("PDF extraction completed")
+```
+
+```python
+# --------------------------------------------------
+# STRUCTURE
+# --------------------------------------------------
+
+data = []
+
+for idx, text in enumerate(pages_text, start=1):
+
+    row = {
+        "page_no": idx,
+        "word_count": len(text.split()),
+        "first_50_chars": text[:50]
+    }
+
+    data.append(row)
+
+df = pd.DataFrame(data)
+
+print(df.head())
+
+logging.info("Structured DataFrame created")
+```
+
+```python
+# --------------------------------------------------
+# STORE
+# --------------------------------------------------
+
+os.makedirs("output", exist_ok=True)
+
+df.to_csv("output/pages.csv", index=False)
+
+df.to_json(
+    "output/pages.json",
+    orient="records"
+)
+
+logging.info("Files stored successfully")
+```
+
+```python
+# --------------------------------------------------
+# SUMMARISE WITH GROQ
+# --------------------------------------------------
+
+client = Groq(
+    api_key=os.environ.get("GROQ_API_KEY")
+)
+
+combined_text = " ".join(pages_text)
+
+trimmed_text = combined_text[:2000]
+
+response = client.chat.completions.create(
+    model="llama-3.1-8b-instant",
+    messages=[
+        {
+            "role": "user",
+            "content": f"Summarise this in exactly 3 bullet points:\n\n{trimmed_text}"
+        }
+    ]
+)
+
+print(response.choices[0].message.content)
+
+logging.info("LLM summarisation completed")
+```
+
+```python
+# --------------------------------------------------
+# VISUALISE
+# --------------------------------------------------
+
+plt.figure(figsize=(8, 5))
+
+plt.bar(
+    df["page_no"],
+    df["word_count"]
+)
+
+plt.title("Word Count Per Page")
+
+plt.xlabel("Page Number")
+
+plt.ylabel("Word Count")
+
+plt.show()
+
+logging.info("Visualisation completed")
+```
+
+=== SECTION D — EXPECTED GROQ RESPONSE SHAPE ===
+
+The Groq API response will print exactly 3 bullet points summarising the PDF content.
+Each bullet point will contain a concise insight extracted from the document.
+The summary may include key findings, important topics, or major observations from the report.
+The response should be human-readable and short enough for quick understanding.
+The bullets are likely to focus on the most repeated or important information in the PDF.
+
+=== SECTION E — LESSONS LEARNED ===
+
+This assignment demonstrated how different stages of an AI pipeline connect together in a practical workflow. PDF ingestion and text extraction using PyMuPDF worked smoothly and made it easy to process unstructured documents. Using pandas for structuring and storing data simplified downstream analysis and persistence. One difficult part was handling large text content while keeping the LLM prompt within token limits. Another challenge was ensuring all stages remained connected correctly from ingestion to visualisation. In a real production MLOps environment, I would add automated logging, monitoring, and pipeline validation to improve reliability, debugging, and reproducibility of the workflow.
