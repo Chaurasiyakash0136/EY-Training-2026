@@ -1,0 +1,427 @@
+MSF FIELD OPERATIONS DATA PLATFORM
+ARCHITECTURE ANALYSIS & RECOMMENDED SOLUTION
+
+====================================================================
+EXECUTIVE SUMMARY
+====================================================================
+
+Médecins Sans Frontières (MSF) operates humanitarian healthcare
+missions across 70+ countries and requires a centralized cloud-based
+analytics platform to consolidate operational data from more than
+400 field sites worldwide.
+
+The organization currently receives multiple forms of operational
+data including patient intake forms, outbreak reports, inventory
+logs, and staffing records in batch CSV formats from remote field
+locations with unstable connectivity.
+
+After evaluating both ETL and ELT architectural approaches, the
+recommended solution is a cloud-native ELT architecture using
+Google BigQuery, cloud storage, and dbt transformations.
+
+This approach provides:
+
+- Flexible analytics capabilities
+- Lower operational complexity
+- Raw data preservation
+- Scalable cloud analytics
+- Easier schema evolution
+- Stronger governance for sensitive healthcare data
+
+====================================================================
+1. BUSINESS PROBLEM
+====================================================================
+
+MSF requires a unified analytics platform capable of collecting,
+storing, transforming, and analyzing operational healthcare data
+generated across 400 field clinics and humanitarian sites.
+
+The system must support:
+
+- Patient intake records
+- Drug inventory management
+- Disease outbreak monitoring
+- Staff deployment tracking
+- Operational forecasting
+- Ad-hoc analytical reporting
+
+The central analytics team in Geneva requires consolidated and
+standardized datasets for operational decision-making.
+
+====================================================================
+2. KEY CONSTRAINTS ANALYSIS
+====================================================================
+
+--------------------------------------------------------------------
+A) INFRASTRUCTURE CONSTRAINTS
+--------------------------------------------------------------------
+
+- Field sites experience intermittent internet connectivity.
+- Most locations upload data as daily batch CSV files.
+- Real-time streaming infrastructure is impractical.
+- Headquarters infrastructure already uses Google Cloud / BigQuery.
+
+Technical Impact:
+A batch-oriented cloud analytics platform is more suitable than a
+real-time streaming architecture.
+
+--------------------------------------------------------------------
+B) DATA SENSITIVITY & PRIVACY
+--------------------------------------------------------------------
+
+Patient records contain highly sensitive healthcare information:
+
+- Patient names
+- Age details
+- Diagnoses
+- GPS treatment coordinates
+- Operational field location information
+
+Technical Impact:
+The platform must implement strong anonymization, masking, access
+control, and governance mechanisms before analytical consumption.
+
+--------------------------------------------------------------------
+C) ANALYTICS REQUIREMENTS
+--------------------------------------------------------------------
+
+Analysts require highly flexible reporting capabilities:
+
+- Outbreak trend analysis
+- Drug supply forecasting
+- Staffing gap analysis
+- Regional operational reporting
+- Emergency response planning
+
+Reporting requirements evolve continuously and no fixed reporting
+schema currently exists.
+
+Technical Impact:
+The architecture must support schema flexibility and reusable
+transformations.
+
+--------------------------------------------------------------------
+D) DATA FORMAT INCONSISTENCY
+--------------------------------------------------------------------
+
+Data arrives from hundreds of field locations with:
+
+- Different CSV templates
+- Different column structures
+- Different date formats
+- Local language labels
+- Inconsistent field naming conventions
+
+Technical Impact:
+A centralized normalization and transformation layer is required.
+
+--------------------------------------------------------------------
+E) LATENCY REQUIREMENTS
+--------------------------------------------------------------------
+
+Operational requirements indicate:
+
+- 24-hour reporting delay is acceptable
+- Weekly forecasting is acceptable
+- No use case requires real-time streaming
+- No sub-second dashboard refresh requirement exists
+
+Technical Impact:
+Real-time stream processing infrastructure is unnecessary.
+
+====================================================================
+3. ARCHITECTURE OPTIONS EVALUATION
+====================================================================
+
+--------------------------------------------------------------------
+OPTION 1 — ETL / STREAM PROCESSING ARCHITECTURE
+--------------------------------------------------------------------
+
+Description:
+In an ETL architecture, data is transformed before loading into the
+warehouse using dedicated processing systems.
+
+Common Technologies:
+- Apache Flink
+- Kafka Streams
+- Spark Streaming
+
+Advantages:
+- Supports real-time event processing
+- Useful for live telemetry systems
+- Optimized for machine monitoring
+
+Disadvantages for MSF:
+- High infrastructure complexity
+- Expensive always-on compute clusters
+- Difficult schema evolution
+- Limited flexibility for analysts
+- Harder reprocessing of historical data
+- Increased operational maintenance
+
+Assessment:
+This architecture is better suited for industrial IoT systems and
+machine telemetry pipelines rather than humanitarian healthcare
+analytics.
+
+--------------------------------------------------------------------
+OPTION 2 — ELT CLOUD ANALYTICS ARCHITECTURE
+--------------------------------------------------------------------
+
+Description:
+In an ELT architecture, raw data is loaded directly into the cloud
+warehouse and transformed later using SQL-based modeling.
+
+Common Technologies:
+- BigQuery
+- Snowflake
+- dbt
+- Cloud Storage
+
+Advantages:
+- Raw data preservation
+- Flexible transformations
+- Easier schema evolution
+- Lower infrastructure cost
+- Better support for ad-hoc analytics
+- Simplified cloud scalability
+- Easier governance and auditing
+
+Disadvantages:
+- Slightly higher storage usage
+- Not optimized for millisecond processing
+
+Assessment:
+This architecture aligns strongly with MSF operational and analytical
+requirements.
+
+====================================================================
+4. FINAL ARCHITECTURE DECISION
+====================================================================
+
+Recommended Solution:
+--------------------------------------------------------------------
+
+A cloud-native ELT architecture using Google BigQuery is the
+recommended solution for the MSF field operations analytics platform.
+
+Primary Reasons:
+--------------------------------------------------------------------
+
+1. Field locations operate using batch uploads rather than streams.
+2. Real-time analytics are not required.
+3. Analysts require highly flexible reporting capabilities.
+4. Raw data must remain replayable and auditable.
+5. Data schemas evolve frequently across field operations.
+6. Infrastructure costs must remain manageable.
+7. Sensitive healthcare data requires centralized governance.
+
+====================================================================
+5. PROPOSED DATA PIPELINE
+====================================================================
+
+                    FIELD CLINICS / SITES
+                               ↓
+                   DAILY CSV BATCH UPLOADS
+                               ↓
+                 CLOUD STORAGE RAW LANDING
+                               ↓
+                    BIGQUERY RAW TABLES
+                               ↓
+                 DATA STANDARDIZATION LAYER
+                               ↓
+              DATA CLEANING & VALIDATION
+                               ↓
+                PII MASKING / ANONYMIZATION
+                               ↓
+                   dbt SQL TRANSFORMATIONS
+                               ↓
+                 ANALYTICS-READY DATASETS
+                               ↓
+            DASHBOARDS / REPORTING / ANALYTICS
+
+====================================================================
+6. MEDALLION DATA ARCHITECTURE
+====================================================================
+
+The platform can implement a Medallion Architecture model for better
+data organization and governance.
+
+--------------------------------------------------------------------
+BRONZE LAYER — RAW DATA
+--------------------------------------------------------------------
+
+Purpose:
+- Store original uploaded CSV files
+- Maintain replayability
+- Preserve historical raw data
+
+Characteristics:
+- Unmodified source ingestion
+- Immutable storage
+- Audit-friendly
+
+--------------------------------------------------------------------
+SILVER LAYER — CLEANED & STANDARDIZED DATA
+--------------------------------------------------------------------
+
+Purpose:
+- Normalize schemas
+- Standardize formats
+- Remove duplicates
+- Validate data quality
+
+Characteristics:
+- Consistent date formats
+- Unified field naming
+- Structured datasets
+
+--------------------------------------------------------------------
+GOLD LAYER — ANALYTICS DATASETS
+--------------------------------------------------------------------
+
+Purpose:
+- Business-ready reporting
+- Dashboard optimization
+- Forecasting datasets
+
+Characteristics:
+- Aggregated metrics
+- Optimized analytical models
+- Executive reporting datasets
+
+====================================================================
+7. SECURITY & GOVERNANCE STRATEGY
+====================================================================
+
+Because the system contains highly sensitive healthcare information,
+strong governance policies are mandatory.
+
+Recommended Controls:
+--------------------------------------------------------------------
+
+- Data anonymization
+- Patient ID tokenization
+- Role-based access control (RBAC)
+- Audit logging
+- Encryption at rest and in transit
+- Secure cloud storage
+- Access monitoring
+- PII masking policies
+
+Important Requirement:
+Sensitive identifiers must never appear directly in analytics
+dashboards or reporting systems.
+
+====================================================================
+8. DATA QUALITY & MONITORING
+====================================================================
+
+The architecture should include operational monitoring mechanisms.
+
+Recommended Monitoring Capabilities:
+--------------------------------------------------------------------
+
+- Failed file detection
+- Schema validation checks
+- Missing column validation
+- Data freshness monitoring
+- Ingestion logging
+- Pipeline execution tracking
+- Duplicate record detection
+
+Benefits:
+These controls improve reliability, auditability, and operational
+trust in the analytics platform.
+
+====================================================================
+9. SCALABILITY STRATEGY
+====================================================================
+
+The proposed cloud-native ELT architecture is highly scalable.
+
+Scalability Benefits:
+--------------------------------------------------------------------
+
+- Additional field sites can be onboarded easily
+- BigQuery supports elastic compute scaling
+- Storage scales independently from compute
+- Transformations can evolve without re-ingestion
+- Batch processing reduces infrastructure overhead
+
+The platform can support future expansion beyond the initial
+400 field locations.
+
+====================================================================
+10. RECOMMENDED TECHNOLOGY STACK
+====================================================================
+
+--------------------------------------------------------------------
+CORE PLATFORM COMPONENTS
+--------------------------------------------------------------------
+
+Data Warehouse:
+- Google BigQuery
+
+Raw Storage:
+- Google Cloud Storage
+
+Transformation Layer:
+- dbt
+
+Workflow Orchestration:
+- Apache Airflow
+
+Visualization & Reporting:
+- Looker
+- Tableau
+- Power BI
+
+Monitoring & Logging:
+- Cloud Monitoring
+- Cloud Logging
+
+====================================================================
+11. FUTURE ENHANCEMENTS
+====================================================================
+
+Potential future improvements may include:
+
+- Machine learning outbreak prediction
+- Geospatial disease analytics
+- Automated anomaly detection
+- Near real-time emergency alerting
+- Predictive supply chain forecasting
+- Mobile field data collection integration
+
+These enhancements can be added incrementally without redesigning
+the overall architecture.
+
+====================================================================
+12. FINAL CONCLUSION
+====================================================================
+
+MSF should implement a cloud-native ELT analytics architecture
+instead of a real-time ETL streaming platform.
+
+The operational realities of humanitarian healthcare environments —
+including unstable connectivity, batch-based uploads, evolving
+analytics requirements, and highly sensitive patient information —
+strongly favor the ELT approach.
+
+By preserving raw data within BigQuery and applying transformations
+after ingestion, MSF can achieve:
+
+- Flexible analytics
+- Lower operational complexity
+- Better scalability
+- Improved governance
+- Easier schema evolution
+- Cost-efficient cloud processing
+
+The proposed architecture provides a practical, scalable, and secure
+foundation for global humanitarian healthcare analytics operations.
+
+====================================================================
+END OF REPORT
+====================================================================
