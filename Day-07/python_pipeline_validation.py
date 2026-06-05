@@ -230,76 +230,165 @@ if validation_errors:
     for e in validation_errors[:5]:
         print(f"  row {e['row_id']} | {e['field']}: {e['message']}")
 
-# Cell [5] — Great Expectations quality suite (ephemeral, no filesystem context)
+# =========================================================
+# Cell [5] — Great Expectations Quality Suite
+# FULLY UPDATED FOR GOOGLE COLAB + PYTHON 3.12
+# =========================================================
+
 import great_expectations as gx
+import pandas as pd
 
 
 def build_ge_suite(df: pd.DataFrame) -> dict:
-    """Run a Great Expectations expectation suite against a DataFrame.
 
-    Returns a results summary dict with passed/evaluated counts.
     """
+    Run Great Expectations validation suite
+    compatible with latest GE version.
+    """
+
+    # =====================================================
+    # CREATE CONTEXT
+    # =====================================================
+
     context = gx.get_context(mode="ephemeral")
 
-    # Register data source
-    ds = context.data_sources.add_pandas("pandas_source")
-    da = ds.add_dataframe_asset("transactions")
-    batch_def = da.add_batch_definition_whole_dataframe("full_batch")
-    batch = batch_def.get_batch(batch_parameters={"dataframe": df})
+    # =====================================================
+    # CREATE DATASOURCE
+    # =====================================================
 
-    # Build expectation suite
-    suite = context.suites.add(gx.ExpectationSuite(name="txn_suite"))
-
-    suite.add_expectation(
-        gx.expectations.ExpectColumnToExist(column="amount"))
-    suite.add_expectation(
-        gx.expectations.ExpectColumnToExist(column="id"))
-    suite.add_expectation(
-        gx.expectations.ExpectColumnValuesToBeBetween(
-            column="amount", min_value=0, max_value=300))
-    suite.add_expectation(
-        gx.expectations.ExpectColumnValuesToNotBeNull(column="id"))
-    suite.add_expectation(
-        gx.expectations.ExpectColumnValuesToNotBeNull(column="ts"))
-    suite.add_expectation(
-        gx.expectations.ExpectColumnValuesToBeInSet(
-            column="category",
-            value_set=["A", "B", "C"],
-            mostly=0.90))   # allow up to 10% nulls / unknowns
-    suite.add_expectation(
-        gx.expectations.ExpectColumnValuesToBeUnique(column="id"))
-
-    # Run validation
-    vd = context.run_validation_definition(
-        gx.ValidationDefinition(name="txn_vd", data=batch, suite=suite)
+    datasource = context.data_sources.add_pandas(
+        name="pandas_source"
     )
-    results = vd.run()
-    stats = results.statistics
+
+    # =====================================================
+    # CREATE DATA ASSET
+    # =====================================================
+
+    asset = datasource.add_dataframe_asset(
+        name="transactions"
+    )
+
+    # =====================================================
+    # CREATE BATCH DEFINITION
+    # =====================================================
+
+    batch_definition = asset.add_batch_definition_whole_dataframe(
+        "full_batch"
+    )
+
+    # =====================================================
+    # LOAD DATAFRAME
+    # =====================================================
+
+    batch = batch_definition.get_batch(
+        batch_parameters={
+            "dataframe": df
+        }
+    )
+
+    # =====================================================
+    # CREATE VALIDATOR
+    # =====================================================
+
+    validator = context.get_validator(
+        batch=batch,
+        create_expectation_suite_with_name="txn_suite"
+    )
+
+    # =====================================================
+    # EXPECTATIONS
+    # =====================================================
+
+    validator.expect_column_to_exist(
+        "amount"
+    )
+
+    validator.expect_column_to_exist(
+        "id"
+    )
+
+    validator.expect_column_values_to_be_between(
+        "amount",
+        min_value=0,
+        max_value=300
+    )
+
+    validator.expect_column_values_to_not_be_null(
+        "id"
+    )
+
+    validator.expect_column_values_to_not_be_null(
+        "ts"
+    )
+
+    validator.expect_column_values_to_be_in_set(
+        "category",
+        value_set=["A", "B", "C"],
+        mostly=0.90
+    )
+
+    validator.expect_column_values_to_be_unique(
+        "id"
+    )
+
+    # =====================================================
+    # RUN VALIDATION
+    # =====================================================
+
+    results = validator.validate()
+
+    stats = results["statistics"]
 
     logger.info(
-        f"GE suite: {stats['successful_expectations']}/"
+        f"GE suite: "
+        f"{stats['successful_expectations']}/"
         f"{stats['evaluated_expectations']} expectations passed"
     )
 
-    if not results.success:
-        failed = [
-            r.expectation_config.type
-            for r in results.results
-            if not r.success
-        ]
-        logger.warning(f"Failed expectations: {failed}")
+    # =====================================================
+    # FAILED EXPECTATIONS
+    # =====================================================
+
+    if not results["success"]:
+
+        failed = []
+
+        for r in results["results"]:
+
+            if not r["success"]:
+
+                failed.append(
+                    r["expectation_config"]["expectation_type"]
+                )
+
+        logger.warning(
+            f"Failed expectations: {failed}"
+        )
+
+    # =====================================================
+    # RETURN SUMMARY
+    # =====================================================
 
     return {
-        "success": results.success,
+        "success": results["success"],
         "passed": stats["successful_expectations"],
         "evaluated": stats["evaluated_expectations"],
     }
 
 
-# ── Run GE suite
+# =========================================================
+# RUN GE SUITE
+# =========================================================
+
 ge_results = build_ge_suite(valid_df)
-print(f"\nGE Suite passed: {ge_results['success']}")
-print(f"Expectations: {ge_results['passed']}/{ge_results['evaluated']}")
+
+print("\nGE Suite Results")
+print(f"Passed: {ge_results['success']}")
+print(
+    f"Expectations: "
+    f"{ge_results['passed']}/"
+    f"{ge_results['evaluated']}"
+)
 
 """---
 ## Section 3 · Transformations
@@ -1141,6 +1230,29 @@ try:
 except SyntaxError as e:
     print(f"\n✗ Syntax error: {e}")
 
+
+
+
+
+"""---
+## Summary
+
+| Stage | Tool | Key feature |
+|---|---|---|
+| Ingest | Strategy pattern | Swap CSV / API / DB without changing pipeline |
+| Validate | Pydantic v2 | Row-level schema + field validators |
+| GE suite | Great Expectations | Dataset-level expectations with `mostly` thresholds |
+| Transform | `functools.reduce` | Pure, composable, independently testable functions |
+| Quality gate | Custom `QualityCheck` | Statistical assertions + alert hook |
+| Store | Parquet (snappy) | Date-partitioned, round-trip verified |
+| Retry | Tenacity | Exponential backoff, `retry_if_exception_type` |
+| Schedule | APScheduler | Cron trigger, coalesce, graceful shutdown |
+| **Ext A** | Delta Lake | ACID, time travel, schema evolution |
+| **Ext B** | Pytest + Hypothesis | Unit + property-based tests, 100% transform coverage |
+| **Ext C** | Prometheus | Counters, histograms, Grafana-ready `/metrics` |
+| **Ext D** | Airflow 2 TaskFlow | XComs, branching, SLA miss callback |
+"""
+
 # =========================================================
 # EXTENSION B — PYTEST + HYPOTHESIS
 # COLAB READY
@@ -1559,22 +1671,3 @@ for line in metrics_output.split("\n"):
     if not line.startswith("#") and line.strip():
 
         print(line)
-
-"""---
-## Summary
-
-| Stage | Tool | Key feature |
-|---|---|---|
-| Ingest | Strategy pattern | Swap CSV / API / DB without changing pipeline |
-| Validate | Pydantic v2 | Row-level schema + field validators |
-| GE suite | Great Expectations | Dataset-level expectations with `mostly` thresholds |
-| Transform | `functools.reduce` | Pure, composable, independently testable functions |
-| Quality gate | Custom `QualityCheck` | Statistical assertions + alert hook |
-| Store | Parquet (snappy) | Date-partitioned, round-trip verified |
-| Retry | Tenacity | Exponential backoff, `retry_if_exception_type` |
-| Schedule | APScheduler | Cron trigger, coalesce, graceful shutdown |
-| **Ext A** | Delta Lake | ACID, time travel, schema evolution |
-| **Ext B** | Pytest + Hypothesis | Unit + property-based tests, 100% transform coverage |
-| **Ext C** | Prometheus | Counters, histograms, Grafana-ready `/metrics` |
-| **Ext D** | Airflow 2 TaskFlow | XComs, branching, SLA miss callback |
-"""
