@@ -1,44 +1,80 @@
 # Day 08 — Queue vs Event Bus Architecture Assignment
 
-## Overview
+# Overview
 
-This assignment focuses on understanding messaging patterns used in distributed systems and microservice architectures. The objective is to identify when to use a Queue-based architecture and when to use an Event Bus architecture in a real-time payment platform.
+This assignment demonstrates the practical use of Queue-based and Event Bus-based messaging patterns in distributed systems and microservice architectures.
 
-The scenario is based on a fictional payment processing platform named **PayStream**, which handles millions of payment transactions and requires reliable communication between multiple services.
+The scenario is based on a fictional real-time payment processing platform named **PayStream**, which handles millions of transactions per day and requires reliable communication between multiple independent services.
+
+The objective is to identify which integrations should use:
+
+* Queue Architecture
+  or
+* Event Bus Architecture
+
+based on messaging behavior, scalability, reliability, retry handling, and service communication requirements.
 
 ---
 
-# Objective
+# Assignment Objective
 
-Classify each system integration as either:
+Analyze each integration flow in the PayStream platform and classify it as:
 
 * **Queue**
   or
 * **Event Bus**
 
-based on scalability, delivery guarantees, retry behavior, consumer patterns, and messaging requirements.
+while providing architectural justification for each decision.
 
 ---
 
-# Concepts Covered
+# What Was Being Tested
+
+This assignment evaluates understanding of:
+
+* Distributed Systems
+* Microservice Communication
+* Event-Driven Architecture
+* Pub/Sub Messaging
+* Queue Messaging
+* Worker Pool Design
+* Fan-Out Communication
+* Retry & Durability Concepts
+
+---
+
+# Queue vs Event Bus — Core Concept
 
 ## Queue Architecture
 
 A Queue is used when:
 
-* A message must be processed by exactly one consumer
-* Retry handling is required
+* Exactly one consumer should process a task
+* Retry support is required
 * Task distribution/load balancing is needed
-* Guaranteed processing is important
-* Worker-based processing is used
+* Duplicate processing must be avoided
+* Worker-based execution is required
 
-### Common Use Cases
+### Queue Architecture Diagram
 
-* Payment processing
-* Background jobs
-* SMS dispatching
-* Batch processing
-* Task queues
+```text
+Producer
+   │
+   ▼
+┌─────────┐
+│ Queue   │
+└─────────┘
+   │
+   ▼
+Single Worker / Consumer
+```
+
+### Queue Characteristics
+
+* One message → One consumer
+* Competing consumers supported
+* Reliable retry mechanisms
+* Best for task processing
 
 ---
 
@@ -47,26 +83,37 @@ A Queue is used when:
 An Event Bus is used when:
 
 * Multiple services need the same event
-* Pub/Sub communication is required
-* Systems must remain loosely coupled
-* Future subscribers may be added
-* Broadcast/fan-out behavior is needed
+* Broadcast/fan-out communication is required
+* Systems should remain loosely coupled
+* New subscribers may be added in future
+* Pub/Sub architecture is preferred
 
-### Common Use Cases
+### Event Bus Architecture Diagram
 
-* Notifications
-* Analytics events
-* Activity streams
-* State change propagation
-* Real-time monitoring systems
+```text
+                ┌──────────────┐
+                │ Notification │
+                └──────────────┘
+                        ▲
+                        │
+Producer ──► Event Bus ─┼──► Analytics
+                        │
+                        ▼
+                 Fraud Service
+```
+
+### Event Bus Characteristics
+
+* One event → Multiple subscribers
+* Broadcast communication
+* Highly extensible
+* Best for event-driven systems
 
 ---
 
-# Platform Scenario
+# PayStream Platform Architecture
 
-## PayStream Architecture
-
-The PayStream platform contains multiple services:
+## System Components
 
 * Merchant API
 * Payment Core
@@ -75,7 +122,43 @@ The PayStream platform contains multiple services:
 * Notification Hub
 * Analytics Pipeline
 
-These services communicate using asynchronous messaging patterns.
+---
+
+# High-Level Architecture Flow
+
+```text
+Merchant API
+      │
+      ▼
+Payment Core
+   │      │      │
+   ▼      ▼      ▼
+Ledger  Fraud  Notification
+Service Engine     Hub
+   │
+   ▼
+Analytics Pipeline
+```
+
+---
+
+# Real-World Use Cases
+
+## Queue Examples
+
+* Payment settlement
+* SMS dispatching
+* Batch processing
+* Background jobs
+* Reconciliation workers
+
+## Event Bus Examples
+
+* Payment broadcasts
+* Account activity updates
+* Analytics events
+* Real-time notifications
+* Monitoring systems
 
 ---
 
@@ -83,31 +166,31 @@ These services communicate using asynchronous messaging patterns.
 
 By completing this assignment, the following concepts were understood:
 
-* Distributed messaging systems
-* Queue-based communication
-* Event-driven architecture
-* Pub/Sub messaging model
-* Retry and durability patterns
-* Fan-out event broadcasting
+* Difference between Queue and Event Bus
+* Event-driven communication models
 * Worker pool architecture
+* Fan-out messaging patterns
+* Retry and reliability handling
 * Exactly-once processing concepts
+* Scalable microservice communication
 
 ---
 
-# Technologies & Architecture Concepts
+# Technologies & Concepts
 
 * Distributed Systems
-* Microservices
 * Event-Driven Architecture
 * Queue Messaging
 * Event Bus
 * Pub/Sub Model
-* Worker Pool Design
+* Worker Pools
+* Message Brokers
+* Microservices
 
 ---
 
 # Conclusion
 
-This assignment demonstrated how different messaging patterns solve different architectural problems in scalable distributed systems.
+This assignment demonstrated how different messaging patterns solve different architectural challenges in distributed systems.
 
-Queue architectures are best suited for controlled task execution and guaranteed processing, while Event Bus architectures are ideal for broadcasting events to multiple independent services.
+Queue architectures are ideal for controlled task execution and guaranteed processing, while Event Bus architectures are best suited for broadcasting events to multiple independent services in scalable systems.
