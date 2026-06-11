@@ -318,6 +318,86 @@ plt.close()
 print("Normalized RED vs IR plot saved.")
 
 # ==========================================================
+# FORECASTING - NEXT 30 SECONDS
+# ==========================================================
+
+from statsmodels.tsa.ar_model import AutoReg
+from sklearn.metrics import mean_absolute_error
+from sklearn.metrics import root_mean_squared_error
+
+print("\n============================================================")
+print("FORECASTING - NEXT 30 SECONDS")
+print("============================================================")
+
+# Using red_corrected signal
+signal = df["red_corrected"]
+
+# 20 ms interval
+samples_per_second = 50
+
+forecast_horizon = 30 * samples_per_second   # 1500 samples
+
+train = signal[:-forecast_horizon]
+test = signal[-forecast_horizon:]
+
+print(f"Training Samples : {len(train)}")
+print(f"Testing Samples  : {len(test)}")
+
+# AutoReg Model
+model = AutoReg(train, lags=20)
+model_fit = model.fit()
+
+predictions = model_fit.predict(
+    start=len(train),
+    end=len(train) + len(test) - 1
+)
+
+# Metrics
+mae = mean_absolute_error(test, predictions)
+rmse = root_mean_squared_error(test, predictions)
+
+print(f"\nMAE  : {mae:.4f}")
+print(f"RMSE : {rmse:.4f}")
+
+
+# Forecast Plot
+
+plt.figure(figsize=(14,5))
+
+plt.plot(
+    test.index,
+    test,
+    label="Actual",
+    linewidth=1
+)
+
+plt.plot(
+    test.index,
+    predictions,
+    label="Forecast",
+    linewidth=1
+)
+
+plt.title("30 Second Forecast")
+
+plt.xlabel("Samples")
+plt.ylabel("Signal")
+
+plt.legend()
+
+plt.tight_layout()
+
+plt.savefig(
+    f"{OUTPUT_DIR}/forecast_plot.png"
+)
+
+plt.close()
+
+print("Forecast plot saved.")
+
+
+
+# ==========================================================
 # FINAL SUMMARY
 # ==========================================================
 

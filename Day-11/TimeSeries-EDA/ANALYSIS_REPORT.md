@@ -209,6 +209,36 @@ Generated:
 
 Normalization allows comparison of waveform shape and peak alignment without being affected by differing signal magnitudes.
 
+
+## Step 8: Forecasting
+
+### Objective
+
+Predict the next 30 seconds of signal data.
+
+### Method
+
+AutoReg model.
+
+### Training Strategy
+
+Train:
+- First 118 seconds
+
+Test:
+- Last 30 seconds
+
+### Evaluation
+
+Metrics used:
+
+- MAE
+- RMSE
+
+### Interpretation
+
+Lower MAE and RMSE values indicate better forecasting performance.
+
 ---
 
 ## Conclusion

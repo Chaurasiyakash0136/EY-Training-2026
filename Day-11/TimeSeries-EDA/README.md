@@ -103,6 +103,24 @@ Generated:
 
 These plots help understand temporal dependencies in the signal.
 
+## Forecasting
+
+A forecasting experiment was performed using the AutoReg model.
+
+The last 30 seconds of the signal were held out as test data.
+
+The model was trained on historical observations and used to predict the next 30 seconds.
+
+Evaluation Metrics:
+
+- MAE (Mean Absolute Error)
+- RMSE (Root Mean Squared Error)
+
+Generated Artifacts:
+
+- forecast_plot.png
+- forecast_metrics.txt
+
 ---
 
 ## Results Summary
