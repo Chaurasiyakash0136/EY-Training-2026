@@ -132,6 +132,18 @@ df["signal_diff"] = df[target].diff()
 
 print("Feature Engineering Completed")
 
+print("\nGenerated Features:")
+print([
+    "lag_1",
+    "lag_5",
+    "lag_10",
+    "rolling_mean_5",
+    "rolling_std_5",
+    "rolling_mean_20",
+    "rolling_std_20",
+    "signal_diff"
+])
+
 # ==========================================================
 # TIME SERIES PLOT
 # ==========================================================
@@ -250,6 +262,60 @@ plot_pacf(df[target].dropna(), lags=50, ax=ax)
 plt.tight_layout()
 plt.savefig(f"{OUTPUT_DIR}/pacf_plot.png")
 plt.close()
+
+
+
+
+# ==========================================================
+# BONUS TASK
+# NORMALIZED RED VS IR SUPERIMPOSED
+# ==========================================================
+
+from sklearn.preprocessing import StandardScaler
+
+print("\nGenerating Normalized RED vs IR Plot...")
+
+scaler = StandardScaler()
+
+normalized = scaler.fit_transform(
+    df[["red", "ir"]]
+)
+
+df["red_norm"] = normalized[:, 0]
+df["ir_norm"] = normalized[:, 1]
+
+plt.figure(figsize=(14,5))
+
+plt.plot(
+    df["timestamp_ms"],
+    df["red_norm"],
+    label="Normalized RED",
+    linewidth=1
+)
+
+plt.plot(
+    df["timestamp_ms"],
+    df["ir_norm"],
+    label="Normalized IR",
+    linewidth=1
+)
+
+plt.title("Normalized RED and IR Superimposed")
+
+plt.xlabel("Timestamp (ms)")
+plt.ylabel("Standardized Signal")
+
+plt.legend()
+
+plt.tight_layout()
+
+plt.savefig(
+    f"{OUTPUT_DIR}/normalized_red_ir_superimposed.png"
+)
+
+plt.close()
+
+print("Normalized RED vs IR plot saved.")
 
 # ==========================================================
 # FINAL SUMMARY
