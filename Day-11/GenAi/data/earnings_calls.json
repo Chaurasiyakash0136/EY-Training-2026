@@ -1,0 +1,17 @@
+[
+    {
+        "id": 1,
+        "transcript": "Revenue increased by 18 percent year over year. Operating margin improved to 22 percent. Management expects strong demand next quarter due to increased enterprise adoption.",
+        "reference_summary": "Revenue and margins improved significantly, and management expects continued growth driven by enterprise demand."
+    },
+    {
+        "id": 2,
+        "transcript": "Cloud revenue grew 25 percent. Customer retention reached 96 percent. Two new AI products were launched and received positive customer feedback.",
+        "reference_summary": "Cloud business expanded strongly, retention remained high, and new AI products were successfully launched."
+    },
+    {
+        "id": 3,
+        "transcript": "Net profit increased 12 percent. International expansion continued across Asia-Pacific markets. The company raised guidance for the next quarter.",
+        "reference_summary": "Profit increased, international growth continued, and management improved future guidance."
+    }
+]
