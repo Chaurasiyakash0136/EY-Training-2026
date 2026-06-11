@@ -1,5 +1,6 @@
 import json
 import os
+from src.pdf_qa import create_pdf_qa
 
 from src.summarization import (
     load_earnings_calls,
@@ -138,9 +139,79 @@ for item in ticket_predictions:
     print("\nPrediction:")
     print(item["prediction"])
 
+
+    # ==================================================
+# TASK 2 - PDF QUESTION ANSWERING
+# ==================================================
+print("\n" + "=" * 60)
+print("TASK 2 - PDF QUESTION ANSWERING")
+print("=" * 60)
+
+pdf_path = "data/policy_document.pdf"
+
+retriever, llm = create_pdf_qa(pdf_path)
+
+questions = [
+    "What is this document about?",
+    "Summarize the policy.",
+    "What are the important rules?"
+]
+
+qa_results = []
+
+for question in questions:
+
+    docs = retriever.invoke(question)
+
+    context = "\n".join(
+        [doc.page_content for doc in docs]
+    )
+
+    prompt = f"""
+Answer the question using only the context.
+
+Context:
+{context}
+
+Question:
+{question}
+"""
+
+    answer = llm.invoke(prompt).content
+
+    print("\nQuestion:")
+    print(question)
+
+    print("\nAnswer:")
+    print(answer)
+
+    qa_results.append(
+        {
+            "question": question,
+            "answer": answer
+        }
+    )
+
+with open(
+    "outputs/qa_results.json",
+    "w",
+    encoding="utf-8"
+) as f:
+
+    json.dump(
+        qa_results,
+        f,
+        indent=4,
+        ensure_ascii=False
+    )
+
+print("\nQA Results Saved Successfully.")
+
 # --------------------------------------------------
 # COMPLETE
 # --------------------------------------------------
+
+
 
 print("\n" + "=" * 60)
 print("PROJECT EXECUTION COMPLETED")
