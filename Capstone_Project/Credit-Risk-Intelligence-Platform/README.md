@@ -662,3 +662,5 @@ retirement planning (Phase 4), 4 fictional test customer profiles (Phase 3).
 - 🔑 OpenAI keys: https://platform.openai.com/api-keys
 - 📊 LangSmith: https://smith.langchain.com
 - 🗄️ Pinecone: https://app.pinecone.io
+#   U p d a t e d  
+ 
