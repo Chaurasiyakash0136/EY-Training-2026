@@ -287,7 +287,11 @@ def _urgency(rec, state: PlatformState) -> None:
         impact    = item.get("impact", "")
         color, bg = _PRIORITY_COLORS.get(urgency, _DEFAULT_COLOR)
 
-        st.markdown(
+        impact_html = (
+            f"<div style='font-size:0.78rem;color:var(--text3);margin-top:4px'>Impact: {impact}</div>"
+            if impact else ""
+        )
+        html = (
             f"<div style='display:flex;align-items:flex-start;gap:14px;"
             f"padding:14px 16px;background:{C['surface']};"
             f"border-radius:10px;border:1px solid {C['border']};margin:6px 0;"
@@ -299,10 +303,10 @@ def _urgency(rec, state: PlatformState) -> None:
             f"<span style='font-size:0.72rem;color:{C['text3']}'>{timeline}</span>"
             f"</div>"
             f"<div style='font-size:0.875rem;color:{C['text']};line-height:1.6'>{action}</div>"
-            f"{'<div style=\"font-size:0.78rem;color:var(--text3);margin-top:4px\">Impact: ' + impact + '</div>' if impact else ''}"
-            f"</div></div>",
-            unsafe_allow_html=True,
+            + impact_html
+            + "</div></div>"
         )
+        st.markdown(html, unsafe_allow_html=True)
 
 
 def _risk_simulator(rec, state: PlatformState) -> None:
