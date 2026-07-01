@@ -1,0 +1,234 @@
+[
+  {
+    "id": "TC01",
+    "category": "factual_extraction",
+    "question": "What is the net salary or take-home salary mentioned in the documents?",
+    "answer": "\ud83d\udccb **Quick Answer**  \nThe net salary (take-home salary) mentioned in the documents is \u20b925,640 for Deepak Sharma and \u20b959,140 for Rohan Mehta.\n\n\ud83d\udcca **Key Numbers**  \n\u2022 Deepak Sharma's Net Salary: \u20b925,640  \n\u2022 Rohan Mehta's Net Salary: \u20b959,140  \n\n\ud83d\udca1 **What This Means For You**  \nDeepak Sharma's take-home pay after deductions is \u20b925,640, which is the amount he will receive in his bank account. Rohan Mehta, who joined later, has a higher take-home pay of \u20b959,140, reflecting his different role and salary structure.\n\n\u2705 **What You Can Do Next**  \nIf you're comparing salaries, consider the roles and experience levels of the employees. You might also want to review your own salary and deductions to see how they compare.",
+    "expected_answer": "",
+    "elapsed_seconds": 8.94,
+    "status": "COMPLETED",
+    "ragas": {
+      "timestamp": "2026-07-01T05:57:17.657282+00:00",
+      "question": "What is the net salary or take-home salary mentioned in the documents?",
+      "faithfulness": 0.0,
+      "answer_relevancy": 1.0,
+      "n_contexts": 6
+    },
+    "deepeval": {
+      "timestamp": "2026-07-01T05:57:25.154226+00:00",
+      "question": "What is the net salary or take-home salary mentioned in the documents?",
+      "hallucination_score": 0.0,
+      "is_grounded": true,
+      "reason": "The score is 0.00 because the actual output fully matches the provided contexts, including Deepak Sharma\u2019s net salary of \u20b925,640 and Rohan Mehta\u2019s net salary of \u20b959,140, with no contradictions identified."
+    }
+  },
+  {
+    "id": "TC02",
+    "category": "factual_extraction",
+    "question": "What is the credit score or CIBIL score reported?",
+    "answer": "\ud83d\udccb **Quick Answer**  \nThe credit score reported is 801.\n\n\ud83d\udcca **Key Numbers**  \n\u2022 Credit Score (CIBIL): 801  \n\u2022 Score Band: Excellent  \n\u2022 Total Active Accounts: 3  \n\u2022 Credit Card Utilisation: 15%  \n\u2022 Payment History: 100% on-time (last 36 months)  \n\u2022 Existing Loans: 1 \u2014 Home Loan, \u20b938,50,000 outstanding (Tenure: 14 yrs remaining)  \n\n\ud83d\udca1 **What This Means For You**  \nA credit score of 801 is considered excellent, which means you have a strong credit history and are likely to be viewed favorably by lenders. Your low credit card utilization at 15% and perfect payment history further support your good credit standing.\n\n\u2705 **What You Can Do Next**  \nYou can continue to maintain your excellent credit score by making timely payments and keeping your credit utilization low. If you're considering applying for new credit, your strong score should help you secure favorable terms.",
+    "expected_answer": "",
+    "elapsed_seconds": 10.67,
+    "status": "COMPLETED",
+    "ragas": {
+      "timestamp": "2026-07-01T05:57:38.663457+00:00",
+      "question": "What is the credit score or CIBIL score reported?",
+      "faithfulness": 1.0,
+      "answer_relevancy": 1.0,
+      "n_contexts": 6
+    },
+    "deepeval": {
+      "timestamp": "2026-07-01T05:57:46.304405+00:00",
+      "question": "What is the credit score or CIBIL score reported?",
+      "hallucination_score": 0.333,
+      "is_grounded": true,
+      "reason": "The score is 0.33 because the actual output strongly matches multiple contexts with consistent details (801 score, Excellent band, account and loan information), but it also conflicts with two contexts that describe very different credit profiles."
+    }
+  },
+  {
+    "id": "TC03",
+    "category": "factual_extraction",
+    "question": "What existing loans or EMIs are mentioned in the documents?",
+    "answer": "\ud83d\udccb **Quick Answer**  \nThe documents mention three existing loans: a personal loan, a two-wheeler loan, and a consumer durable loan, along with a home loan.\n\n\ud83d\udcca **Key Numbers**  \n\u2022 **Personal Loan**:  \n  - Outstanding Balance: \u20b91,80,000  \n  - Monthly EMI: \u20b98,500  \n  - Interest Rate: 22% p.a.  \n  - Repayment Status: Overdue (2 EMIs missed)  \n\n\u2022 **Two-Wheeler Loan**:  \n  - Outstanding Balance: \u20b968,000  \n  - Monthly EMI: \u20b94,200  \n  - Interest Rate: 18% p.a.  \n  - Repayment Status: Overdue (1 EMI missed)  \n\n\u2022 **Consumer Durable Loan**:  \n  - Outstanding Balance: \u20b942,000  \n  - Monthly EMI: \u20b93,300  \n  - Repayment Status: Current (minimum payments only)  \n\n\u2022 **Home Loan**:  \n  - Outstanding Balance: \u20b938,50,000  \n  - Monthly EMI: \u20b942,000  \n  - Interest Rate: 8.65% p.a.  \n  - Repayment History: No defaults  \n\n\ud83d\udca1 **What This Means For You**  \nYou have a mix of loans, some of which are overdue, meaning payments are missed. The personal and two-wheeler loans are currently overdue, while the consumer durable loan is being paid but only at the minimum level. The home loan is being managed well with no missed payments.\n\n\u2705 **What You Can Do Next**  \nConsider prioritizing the overdue loans to avoid further penalties. You might also want to review your budget to see if you can increase payments on the consumer durable loan to bring it back to a more manageable status.",
+    "expected_answer": "",
+    "elapsed_seconds": 11.0,
+    "status": "COMPLETED",
+    "ragas": {
+      "timestamp": "2026-07-01T05:58:00.072447+00:00",
+      "question": "What existing loans or EMIs are mentioned in the documents?",
+      "faithfulness": 0.0,
+      "answer_relevancy": 1.0,
+      "n_contexts": 6
+    },
+    "deepeval": {
+      "timestamp": "2026-07-01T05:58:06.041699+00:00",
+      "question": "What existing loans or EMIs are mentioned in the documents?",
+      "hallucination_score": 0.0,
+      "is_grounded": true,
+      "reason": "The score is 0.00 because the actual output fully matches the provided contexts, including all listed loan types, balances, EMIs, interest rates, and repayment/default statuses, with no contradictions."
+    }
+  },
+  {
+    "id": "TC04",
+    "category": "factual_extraction",
+    "question": "What is the average monthly balance shown in the bank statement?",
+    "answer": "\ud83d\udccb **Quick Answer**  \nThe average monthly balance shown in the bank statement is \u20b92,100.\n\n\ud83d\udcca **Key Numbers**  \n\u2022 Average Monthly Balance: \u20b92,100 (frequently dips below \u20b9500)  \n\u2022 Opening Balance (Jan): \u20b93,200  \n\u2022 Closing Balance (Mar): \u20b9890  \n\n\ud83d\udca1 **What This Means For You**  \nThe average monthly balance of \u20b92,100 indicates that, on average, this amount is maintained in the account. However, it also suggests that the balance often falls below \u20b9500, which could lead to penalties or fees.\n\n\u2705 **What You Can Do Next**  \nConsider reviewing your spending habits to avoid dipping below the minimum balance. You might also want to set up alerts for low balances to help manage your account better.",
+    "expected_answer": "",
+    "elapsed_seconds": 7.62,
+    "status": "COMPLETED",
+    "ragas": {
+      "timestamp": "2026-07-01T05:58:18.630663+00:00",
+      "question": "What is the average monthly balance shown in the bank statement?",
+      "faithfulness": 1.0,
+      "answer_relevancy": 0.8,
+      "n_contexts": 6
+    },
+    "deepeval": {
+      "timestamp": "2026-07-01T05:58:24.616733+00:00",
+      "question": "What is the average monthly balance shown in the bank statement?",
+      "hallucination_score": 0.167,
+      "is_grounded": true,
+      "reason": "The score is 0.17 because the actual output mostly aligns with the supporting contexts on the average monthly balance of \u20b92,100 and related balance details, with only one contradiction coming from a conflicting context that lists a different account holder and balance."
+    }
+  },
+  {
+    "id": "TC05",
+    "category": "factual_extraction",
+    "question": "What is the credit card utilisation percentage reported?",
+    "answer": "\ud83d\udccb **Quick Answer**  \nThe credit card utilisation percentage reported is 28% and 15% in different contexts.\n\n\ud83d\udcca **Key Numbers**  \n\u2022 28% credit card utilisation (from Context 1)  \n\u2022 15% credit card utilisation (from Contexts 2, 3, 4, and 5)  \n\n\ud83d\udca1 **What This Means For You**  \nCredit card utilisation is the percentage of your credit limit that you are currently using. A lower percentage, like 15%, is generally better for your credit score, as it shows you are not overly reliant on credit. In contrast, a higher percentage, like 28%, is still acceptable but could be improved for a better credit score.\n\n\u2705 **What You Can Do Next**  \nConsider reducing your credit card balance to lower your utilisation percentage. Aim to keep it below 30% to maintain a healthy credit score.",
+    "expected_answer": "",
+    "elapsed_seconds": 7.06,
+    "status": "COMPLETED",
+    "ragas": {
+      "timestamp": "2026-07-01T05:58:34.530949+00:00",
+      "question": "What is the credit card utilisation percentage reported?",
+      "faithfulness": 0.5,
+      "answer_relevancy": 0.5,
+      "n_contexts": 6
+    },
+    "deepeval": {
+      "timestamp": "2026-07-01T05:58:41.114772+00:00",
+      "question": "What is the credit card utilisation percentage reported?",
+      "hallucination_score": 0.167,
+      "is_grounded": true,
+      "reason": "The score is 0.17 because most of the actual output aligns with the provided contexts by correctly stating credit card utilisation as 15% or 28%, but it contains a clear contradiction with one context that shows 91% utilisation."
+    }
+  },
+  {
+    "id": "TC06",
+    "category": "analytical",
+    "question": "Are there any overdue payments, defaults or late payments mentioned?",
+    "answer": "\ud83d\udccb **Quick Answer**  \nYes, there are overdue payments, defaults, and late payments mentioned in your documents.\n\n\ud83d\udcca **Key Numbers**  \n\u2022 Personal Loan: 2 EMIs overdue (Jan & Feb 2026)  \n\u2022 Two-Wheeler Loan: 1 EMI overdue (Feb 2026)  \n\u2022 Credit Report: 2 defaults in the last 12 months; 5 late payments in 24 months  \n\u2022 Written-off Account: 1 account written off in 2023 (\u20b935,000)  \n\n\ud83d\udca1 **What This Means For You**  \nYou have missed payments on two loans, which can negatively affect your credit score. Additionally, your credit report shows a history of defaults and late payments, indicating that lenders may see you as a higher risk.\n\n\u2705 **What You Can Do Next**  \nConsider reaching out to your lenders to discuss repayment options or restructuring your loans. It may also be helpful to create a budget to manage your payments more effectively and avoid future missed payments.",
+    "expected_answer": "",
+    "elapsed_seconds": 7.27,
+    "status": "COMPLETED",
+    "ragas": {
+      "timestamp": "2026-07-01T05:58:51.219399+00:00",
+      "question": "Are there any overdue payments, defaults or late payments mentioned?",
+      "faithfulness": 0.0,
+      "answer_relevancy": 1.0,
+      "n_contexts": 6
+    },
+    "deepeval": {
+      "timestamp": "2026-07-01T05:58:58.119573+00:00",
+      "question": "Are there any overdue payments, defaults or late payments mentioned?",
+      "hallucination_score": 0.0,
+      "is_grounded": true,
+      "reason": "The score is 0.00 because the actual output fully matches the provided context, correctly describing the overdue EMIs, missed payments on two loans, and the credit report risk indicators, with no contradictions present."
+    }
+  },
+  {
+    "id": "TC07",
+    "category": "factual_extraction",
+    "question": "What is the monthly income and what are the monthly expenses shown?",
+    "answer": "\ud83d\udccb **Quick Answer**  \nYour average monthly income is \u20b925,640, and your total monthly expenses amount to \u20b929,500.\n\n\ud83d\udcca **Key Numbers**  \n\u2022 Average Monthly Income (Salary): \u20b925,640  \n\u2022 Average Monthly Expenses:  \n  - EMI \u2014 Personal Loan 1: \u20b98,500  \n  - EMI \u2014 Two-Wheeler Loan: \u20b94,200  \n  - EMI \u2014 Consumer Durable Loan: \u20b93,300  \n  - Rent: \u20b96,500  \n  - Other expenses: \u20b95,000  \n\u2022 Total Monthly Expenses: \u20b929,500  \n\n\ud83d\udca1 **What This Means For You**  \nYour income is \u20b925,640, but your expenses total \u20b929,500, which means you are spending more than you earn each month. This can lead to financial strain if it continues, as you are currently running a deficit of \u20b91,860 monthly.\n\n\u2705 **What You Can Do Next**  \nConsider reviewing your expenses to identify areas where you can cut back. Additionally, think about ways to increase your income, such as taking on extra work or finding new sources of income.",
+    "expected_answer": "",
+    "elapsed_seconds": 7.95,
+    "status": "COMPLETED",
+    "ragas": {
+      "timestamp": "2026-07-01T05:59:10.091233+00:00",
+      "question": "What is the monthly income and what are the monthly expenses shown?",
+      "faithfulness": 0.0,
+      "answer_relevancy": 1.0,
+      "n_contexts": 6
+    },
+    "deepeval": {
+      "timestamp": "2026-07-01T05:59:16.455714+00:00",
+      "question": "What is the monthly income and what are the monthly expenses shown?",
+      "hallucination_score": 0.167,
+      "is_grounded": true,
+      "reason": "The score is 0.17 because the actual output is largely grounded in the correct context for Deepak Sharma: the income, expense breakdown, total expenses, and \u20b91,860 deficit all match. The only issue is a contradiction with an unrelated context for Priya Nair, so hallucination is low overall."
+    }
+  },
+  {
+    "id": "TC08",
+    "category": "factual_extraction",
+    "question": "What is the employer name and designation mentioned in the salary slip?",
+    "answer": "\ud83d\udccb **Quick Answer**  \nThe employer name is Deepak Sharma, and the designation is Data Entry Operator.\n\n\ud83d\udcca **Key Numbers**  \n\u2022 Employee Name: Deepak Sharma  \n\u2022 Designation: Data Entry Operator  \n\n\ud83d\udca1 **What This Means For You**  \nThis salary slip shows that Deepak Sharma is working as a Data Entry Operator. It indicates his role within the company, which can be important for understanding his responsibilities and position.\n\n\u2705 **What You Can Do Next**  \nIf you need to verify any details or have questions about his employment, consider reaching out to the HR department. You might also want to review other salary slips for comparison or additional information.",
+    "expected_answer": "",
+    "elapsed_seconds": 6.07,
+    "status": "COMPLETED",
+    "ragas": {
+      "timestamp": "2026-07-01T05:59:25.727718+00:00",
+      "question": "What is the employer name and designation mentioned in the salary slip?",
+      "faithfulness": 1.0,
+      "answer_relevancy": 1.0,
+      "n_contexts": 6
+    },
+    "deepeval": {
+      "timestamp": "2026-07-01T05:59:31.161394+00:00",
+      "question": "What is the employer name and designation mentioned in the salary slip?",
+      "hallucination_score": 0.167,
+      "is_grounded": true,
+      "reason": "The score is 0.17 because the actual output is strongly supported by most contexts, consistently matching the employee name Deepak Sharma and designation Data Entry Operator, with only one contradictory context mentioning a different person and role."
+    }
+  },
+  {
+    "id": "TC09",
+    "category": "negative_test",
+    "question": "What is the current stock price of this person?",
+    "answer": "This information is not available in your uploaded documents.",
+    "expected_answer": "This information is not available in the uploaded documents.",
+    "elapsed_seconds": 6.15,
+    "status": "COMPLETED",
+    "correctly_refused": true,
+    "ragas": {
+      "timestamp": "2026-07-01T05:59:39.708210+00:00",
+      "question": "What is the current stock price of this person?",
+      "faithfulness": 1.0,
+      "answer_relevancy": 0.0,
+      "n_contexts": 6
+    },
+    "deepeval": {
+      "timestamp": "2026-07-01T05:59:45.674596+00:00",
+      "question": "What is the current stock price of this person?",
+      "hallucination_score": 1.0,
+      "is_grounded": false,
+      "reason": "The score is 1.00 because the actual output incorrectly claims the information is unavailable, while the provided context clearly contains salary slip details, employee information, earnings, deductions, and net salary. There are multiple direct contradictions and no factual alignments."
+    }
+  },
+  {
+    "id": "TC10",
+    "category": "negative_test",
+    "question": "What is the Aadhar card number and PAN card number of this person?",
+    "answer": "\ud83d\udccb **Quick Answer**  \nThis information is not available in your uploaded documents.\n\n\ud83d\udcca **Key Numbers**  \n\u2022 PAN: TSTPA1234X\n\n\ud83d\udca1 **What This Means For You**  \nThe only identification number provided in the documents is the PAN (Permanent Account Number), which is TSTPA1234X. Unfortunately, there is no information regarding the Aadhar card number.\n\n\u2705 **What You Can Do Next**  \nIf you need your Aadhar card number, you may want to check your physical documents or the official Aadhar website for assistance.",
+    "expected_answer": "This information is not available in the uploaded documents.",
+    "elapsed_seconds": 6.75,
+    "status": "COMPLETED",
+    "correctly_refused": true,
+    "ragas": {
+      "timestamp": "2026-07-01T05:59:56.140400+00:00",
+      "question": "What is the Aadhar card number and PAN card number of this person?",
+      "faithfulness": 0.0,
+      "answer_relevancy": 0.5,
+      "n_contexts": 6
+    },
+    "deepeval": {
+      "timestamp": "2026-07-01T06:00:04.225858+00:00",
+      "question": "What is the Aadhar card number and PAN card number of this person?",
+      "hallucination_score": 1.0,
+      "is_grounded": false,
+      "reason": "The score is 1.00 because the actual output is fully contradicted by the contexts: it incorrectly claims PAN is the only identification number and omits clearly present details like Employee ID TST-EMP-5001 and other tax summary fields, while correctly noting only that no Aadhaar number is shown."
+    }
+  }
+]
