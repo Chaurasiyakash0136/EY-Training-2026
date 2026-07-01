@@ -1,4 +1,4 @@
-name: CI/CD Pipeline - Credit Risk Platform
+name: CI Pipeline - Credit Risk Platform
 
 on:
   push:
@@ -50,8 +50,8 @@ jobs:
         run: |
           python -m pytest tests/unit/ -v --tb=short
 
-  build-and-deploy:
-    name: Build Docker and Deploy to Azure
+  docker-build:
+    name: Docker Build Check
     runs-on: ubuntu-latest
     needs: unit-tests
 
@@ -59,30 +59,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Login to Azure Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
-          username: ${{ secrets.AZURE_ACR_NAME }}
-          password: ${{ secrets.AZURE_ACR_PASSWORD }}
-
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: Capstone_Project/Credit-Risk-Intelligence-Platform
-          file: Capstone_Project/Credit-Risk-Intelligence-Platform/infra/Dockerfile
-          push: true
-          tags: |
-            ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/credit-risk-platform:latest
-            ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/credit-risk-platform:${{ github.sha }}
-
-      - name: Login to Azure
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-      - name: Deploy to Azure Web App
-        uses: azure/webapps-deploy@v2
-        with:
-          app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
-          images: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io/credit-risk-platform:${{ github.sha }}
+      - name: Build Docker image
+        working-directory: Capstone_Project/Credit-Risk-Intelligence-Platform
+        run: |
+          docker build -f infra/Dockerfile -t credit-risk-platform:ci .
