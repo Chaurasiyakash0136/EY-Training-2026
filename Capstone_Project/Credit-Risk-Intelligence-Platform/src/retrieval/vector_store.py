@@ -162,7 +162,7 @@ class PineconeVectorStore:
         except ImportError:
             self._last_error = (
                 "Pinecone packages not installed. "
-                "Run: pip install pinecone-client langchain-pinecone"
+                "Run: pip install pinecone langchain-pinecone"
             )
             logger.error(self._last_error)
         except Exception as exc:
