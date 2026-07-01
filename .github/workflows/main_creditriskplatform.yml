@@ -31,10 +31,10 @@ jobs:
       - name: Build and push container image to registry
         uses: docker/build-push-action@v3
         with:
-          context: .
+          context: ./Capstone_Project/Credit-Risk-Intelligence-Platform
           push: true
           tags: creditriskakash7272.azurecr.io/${{ secrets.AZUREAPPSERVICE_CONTAINERUSERNAME_A3F60C2E29BF4F77B7DA8946841C104D }}/credit-risk-platform:${{ github.sha }}
-          file: ./Dockerfile
+          file: ./Capstone_Project/Credit-Risk-Intelligence-Platform/infra/Dockerfile
 
   deploy:
     runs-on: ubuntu-latest
