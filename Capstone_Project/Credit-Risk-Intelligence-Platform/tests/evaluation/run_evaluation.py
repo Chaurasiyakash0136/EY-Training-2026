@@ -179,6 +179,24 @@ def main() -> None:
             response  = orchestrator._chat_agent.answer_question(question, retrieved)
             answer    = response.content
             elapsed   = round(time.time() - t0, 2)
+
+            # ── Print retrieved chunks so faithfulness is visible ──────────
+            # This shows EXACTLY which document chunks the AI used to answer.
+            # Faithfulness measures whether the answer stuck to these chunks.
+            # If the answer contains facts NOT in these chunks = hallucination.
+            if retrieved:
+                print(f"  📄 Retrieved {len(retrieved)} chunk(s) used for this answer:")
+                for ci, doc in enumerate(retrieved[:3], 1):
+                    source = doc.metadata.get("source", "unknown")
+                    page   = doc.metadata.get("page", "?")
+                    # Skip boilerplate — show actual financial data
+                    lines = doc.page_content.strip().split("\n")
+                    skip_kw = ["fictional test", "made up", "purposes only", "[source:", "[page", "note —"]
+                    useful = [l.strip() for l in lines if l.strip() and not any(k in l.lower() for k in skip_kw)]
+                    preview = " | ".join(useful[:4])[:120]
+                    print(f"     [{ci}] {source} (page {page}): {preview}...")
+            # ──────────────────────────────────────────────────────────────
+
             print(f"  A: {answer[:150]}{'...' if len(answer) > 150 else ''}")
             print(f"  ⏱  {elapsed}s")
         except Exception as exc:
@@ -189,6 +207,27 @@ def main() -> None:
             })
             continue
 
+        # ── Save retrieved chunks into result so trainer can see them ──────
+        retrieved_chunks = []
+        for doc in retrieved:
+            # Skip boilerplate header lines — show only actual financial data
+            lines = doc.page_content.strip().split("\n")
+            skip_keywords = [
+                "fictional test document", "made up for software testing",
+                "purposes only", "[source:", "[page", "note —"
+            ]
+            meaningful_lines = [
+                line.strip() for line in lines
+                if line.strip()
+                and not any(kw in line.lower() for kw in skip_keywords)
+            ]
+            clean_text = " | ".join(meaningful_lines[:8])  # show first 8 meaningful lines
+            retrieved_chunks.append({
+                "source": doc.metadata.get("source", "unknown"),
+                "page":   doc.metadata.get("page", "?"),
+                "text":   clean_text[:400],
+            })
+
         result_row = {
             "id": tc_id,
             "category": category,
@@ -197,6 +236,8 @@ def main() -> None:
             "expected_answer": ground_truth,
             "elapsed_seconds": elapsed,
             "status": "COMPLETED",
+            "retrieved_chunks": retrieved_chunks,
+            "chunks_count": len(retrieved_chunks),
         }
 
         # Negative-test check: did the AI correctly refuse to answer?
@@ -213,14 +254,25 @@ def main() -> None:
             ragas_scores = evaluate_rag_response(question, answer, retrieved, ground_truth)
             if ragas_scores:
                 result_row["ragas"] = ragas_scores
-                print(f"  📊 RAGAS — faithfulness: {ragas_scores.get('faithfulness', 'N/A')}, "
-                      f"relevancy: {ragas_scores.get('answer_relevancy', 'N/A')}")
+                faith = ragas_scores.get("faithfulness", "N/A")
+                relev = ragas_scores.get("answer_relevancy", "N/A")
+                print(f"  📊 RAGAS — faithfulness: {faith}, relevancy: {relev}")
+                if isinstance(faith, float):
+                    if faith >= 0.8:
+                        print(f"     ✅ Faithfulness {faith:.2f}: AI answer closely matches the {len(retrieved)} chunks shown above")
+                    elif faith >= 0.5:
+                        print(f"     ⚠️  Faithfulness {faith:.2f}: AI answer partially uses chunks — some outside info added")
+                    else:
+                        print(f"     🔴 Faithfulness {faith:.2f}: AI answer diverges from chunks — possible hallucination")
 
             deepeval_scores = evaluate_hallucination(question, answer, retrieved)
             if deepeval_scores:
                 result_row["deepeval"] = deepeval_scores
                 grounded = "✅ GROUNDED" if deepeval_scores.get("is_grounded") else "🔴 HALLUCINATED"
-                print(f"  🧠 DeepEval — hallucination: {deepeval_scores.get('hallucination_score', 'N/A')} ({grounded})")
+                hall_score = deepeval_scores.get("hallucination_score", "N/A")
+                print(f"  🧠 DeepEval — hallucination: {hall_score} ({grounded})")
+                if isinstance(hall_score, float) and hall_score > 0.3:
+                    print(f"     ⚠️  Score {hall_score:.2f}: Answer contains info NOT found in chunks above")
 
         results.append(result_row)
 

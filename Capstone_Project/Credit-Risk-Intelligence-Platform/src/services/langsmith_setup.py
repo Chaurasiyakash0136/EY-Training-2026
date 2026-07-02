@@ -1,15 +1,20 @@
 # src/services/langsmith_setup.py
 # ============================================================
-# LangSmith Observability Setup
+# LangSmith Observability Setup — v3.2
 #
-# When LANGCHAIN_API_KEY + LANGCHAIN_TRACING_V2=true are set,
-# ALL LLM calls, embeddings, and RAG retrievals are traced
-# automatically — no code changes needed beyond this call.
+# Traces the FULL user journey, not just LLM calls:
+#   login → document upload → processing → risk analysis → chat
 #
-# View traces at: https://smith.langchain.com
+# Every function decorated with @traceable appears as a named
+# span in LangSmith, showing inputs, outputs, latency, errors.
+#
+# Works for BOTH local and Azure deployment — traces go directly
+# to smith.langchain.com regardless of where the app runs.
 # ============================================================
 from __future__ import annotations
 import os
+import functools
+import time
 from config.settings import settings
 from src.utils.logger import get_logger
 
@@ -17,22 +22,12 @@ logger = get_logger(__name__)
 
 
 def initialise() -> None:
-    """
-    Activate LangSmith tracing.
-    Call this once at application startup, BEFORE any LangChain imports.
-    """
+    """Activate LangSmith tracing. Call once at app startup."""
     if not settings.LANGCHAIN_API_KEY:
-        logger.info(
-            "LangSmith tracing DISABLED — LANGCHAIN_API_KEY not set. "
-            "Get a free key at https://smith.langchain.com"
-        )
+        logger.info("LangSmith tracing DISABLED — LANGCHAIN_API_KEY not set.")
         return
-
     if not settings.LANGCHAIN_TRACING_V2:
-        logger.info(
-            "LangSmith tracing DISABLED — LANGCHAIN_TRACING_V2=false in .env. "
-            "Set to true to enable tracing."
-        )
+        logger.info("LangSmith tracing DISABLED — LANGCHAIN_TRACING_V2=false.")
         return
 
     os.environ["LANGCHAIN_TRACING_V2"] = "true"
@@ -44,6 +39,46 @@ def initialise() -> None:
         "View traces at https://smith.langchain.com",
         settings.LANGCHAIN_PROJECT,
     )
+
+
+def trace_span(name: str, run_type: str = "chain", metadata: dict | None = None):
+    """
+    Decorator that creates a LangSmith span for any function.
+
+    Usage:
+        @trace_span("document_upload", run_type="chain", metadata={"component": "upload"})
+        def process_document(self, file):
+            ...
+
+    In LangSmith this shows as a named span with:
+    - Function name and run type
+    - Input arguments
+    - Return value
+    - Time taken
+    - Any errors that occurred
+    - Metadata tags for filtering
+
+    Works as a no-op (does nothing) when LangSmith is not configured,
+    so the app works normally even without an API key.
+    """
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            if not settings.langsmith_enabled:
+                return func(*args, **kwargs)
+            try:
+                from langsmith import traceable
+                traced = traceable(
+                    name=name,
+                    run_type=run_type,
+                    metadata=metadata or {},
+                )(func)
+                return traced(*args, **kwargs)
+            except Exception:
+                # If tracing fails for any reason, run the function normally
+                return func(*args, **kwargs)
+        return wrapper
+    return decorator
 
 
 def status() -> dict[str, str]:

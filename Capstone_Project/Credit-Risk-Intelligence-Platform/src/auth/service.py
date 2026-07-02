@@ -16,6 +16,13 @@ from src.auth.models import AccountType, UserSession
 from src.utils.logger import get_logger
 from config.settings import settings
 
+try:
+    from langsmith import traceable as _traceable
+except ImportError:
+    def _traceable(**kwargs):
+        def decorator(func): return func
+        return decorator
+
 logger = get_logger(__name__)
 
 _RESET_TOKEN_VALID_HOURS  = 1
@@ -26,6 +33,7 @@ class AuthError(Exception):
     """Raised for any user-facing auth failure (bad password, duplicate email, etc.)."""
 
 
+@_traceable(name="auth.register", run_type="chain", metadata={"component": "auth", "step": "register"})
 def register(
     email: str,
     password: str,
@@ -51,6 +59,7 @@ def register(
     return create_session_token(email, account_type, full_name)
 
 
+@_traceable(name="auth.login", run_type="chain", metadata={"component": "auth", "step": "login"})
 def login(email: str, password: str) -> tuple[str, UserSession]:
     """Returns (jwt_token, UserSession) on success. Raises AuthError on failure."""
     db.init_db()

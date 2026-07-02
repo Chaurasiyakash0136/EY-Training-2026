@@ -21,6 +21,13 @@ from src.retrieval.reranker import BM25Index, extract_years, year_aware_rerank, 
 from src.utils.logger import get_logger
 from config.settings import settings
 
+try:
+    from langsmith import traceable as _traceable
+except ImportError:
+    def _traceable(**kwargs):
+        def decorator(func): return func
+        return decorator
+
 logger = get_logger(__name__)
 
 
@@ -58,6 +65,8 @@ class RetrievalAgent:
             logger.error("Indexing failed: %s", self.last_error)
         return success
 
+    @_traceable(name="retrieval_agent.retrieve", run_type="retriever",
+                metadata={"component": "retrieval_agent"})
     def retrieve(
         self,
         query:        str,

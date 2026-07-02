@@ -31,14 +31,21 @@ class Settings(BaseSettings):
     DATA_UPLOAD_DIR: str = "data/uploads"
 
     # ── LLM Provider (text generation) ───────────────────────
-    # gemini = Google Gemini (default, cost-effective, free tier)
-    # openai = OpenAI GPT-4o (fallback when Gemini quota exceeded)
-    LLM_PROVIDER: Literal["openai", "gemini"] = "gemini"
+    # groq   = Groq (PRIMARY — fastest, generous free tier, no credit card)
+    # openai = OpenAI GPT-4o (SECOND fallback)
+    # gemini = Google Gemini (THIRD fallback)
+    LLM_PROVIDER: Literal["openai", "gemini", "groq"] = "groq"
 
     # ── Embedding Provider (vector search) ───────────────────
     EMBEDDING_PROVIDER: Literal["openai", "gemini"] = "openai"
 
-    # ── OpenAI ────────────────────────────────────────────────
+    # ── Groq (PRIMARY LLM) ────────────────────────────────────
+    # Free tier: 14,400 requests/day — no credit card needed
+    # Get key at: https://console.groq.com
+    GROQ_API_KEY:   str = ""
+    GROQ_MODEL:     str = "llama-3.3-70b-versatile"
+
+    # ── OpenAI (SECOND fallback) ──────────────────────────────
     OPENAI_API_KEY:         str   = ""
     OPENAI_MODEL:           str   = "gpt-4o-mini"
     OPENAI_EMBEDDING_MODEL: str   = "text-embedding-3-small"

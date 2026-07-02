@@ -29,6 +29,13 @@ from src.prompts.institution_prompts import INSTITUTION_SUMMARY_SYSTEM, build_in
 from src.retrieval.sampling import extract_financial_sample
 from src.utils.logger import get_logger
 
+try:
+    from langsmith import traceable as _traceable
+except ImportError:
+    def _traceable(**kwargs):
+        def decorator(func): return func
+        return decorator
+
 logger = get_logger(__name__)
 
 
@@ -53,6 +60,8 @@ class ChatAgent:
 
     # ── Chat ─────────────────────────────────────────────────
 
+    @_traceable(name="chat_agent.answer_question", run_type="chain",
+                metadata={"component": "chat_agent", "step": "answer_question"})
     def answer_question(
         self,
         question:       str,
@@ -271,11 +280,13 @@ class ChatAgent:
 
     # ── Risk Assessment ──────────────────────────────────────
 
+    @_traceable(name="chat_agent.assess_risk", run_type="chain",
+                metadata={"component": "chat_agent", "step": "risk_assessment"})
     def assess_risk(
         self,
         combined_text: str,
         entity_type:   EntityType = EntityType.UNKNOWN,
-        loan_context  = None,   # LoanContext | None — Phase 9/13
+        loan_context  = None,
         account_type: str = "customer",
     ) -> RiskAssessment:
         logger.info("Risk assessment for entity: %s (loan_app=%s, account=%s)",
@@ -321,12 +332,14 @@ class ChatAgent:
 
     # ── Recommendations ──────────────────────────────────────
 
+    @_traceable(name="chat_agent.generate_recommendations", run_type="chain",
+                metadata={"component": "chat_agent", "step": "recommendations"})
     def generate_recommendations(
         self,
         risk_assessment: RiskAssessment,
         summary_texts:   str,
         entity_type:     EntityType = EntityType.UNKNOWN,
-        loan_context     = None,   # LoanContext | None — Phase 8/11
+        loan_context     = None,
         account_type:    str = "customer",
     ) -> AIRecommendations:
         logger.info("Generating recommendations for entity: %s (account=%s)", entity_type.value, account_type)

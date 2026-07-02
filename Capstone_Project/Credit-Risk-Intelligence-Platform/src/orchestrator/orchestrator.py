@@ -17,6 +17,18 @@ from src.models.schemas import (
 from src.retrieval.sampling import extract_financial_sample
 from src.utils.logger import get_logger
 
+# LangSmith tracing — @traceable creates named spans in LangSmith
+# showing inputs, outputs, time, and errors for each step.
+# Works as no-op when LANGCHAIN_API_KEY is not set.
+try:
+    from langsmith import traceable as _traceable
+    _TRACING = True
+except ImportError:
+    _TRACING = False
+    def _traceable(**kwargs):
+        def decorator(func): return func
+        return decorator
+
 logger = get_logger(__name__)
 
 
@@ -125,6 +137,8 @@ class AgentOrchestrator:
 
     # ── Risk Assessment ──────────────────────────────────────
 
+    @_traceable(name="run_risk_analysis", run_type="chain",
+                metadata={"component": "orchestrator", "step": "risk_analysis"})
     def run_risk_analysis(self, state: PlatformState) -> RiskAssessment | None:
         if not state.summaries:
             logger.warning("No summaries for risk analysis.")
@@ -173,6 +187,8 @@ class AgentOrchestrator:
 
     # ── Recommendations ──────────────────────────────────────
 
+    @_traceable(name="run_recommendations", run_type="chain",
+                metadata={"component": "orchestrator", "step": "recommendations"})
     def run_recommendations(self, state: PlatformState) -> AIRecommendations:
         if state.risk_assessment is None:
             result = self.run_risk_analysis(state)
@@ -363,6 +379,8 @@ class AgentOrchestrator:
 
     # ── Chat ─────────────────────────────────────────────────
 
+    @_traceable(name="chat_question", run_type="chain",
+                metadata={"component": "orchestrator", "step": "ai_chat"})
     def chat(self, question: str, state: PlatformState) -> ChatMessage:
         user_msg = ChatMessage(role="user", content=question)
         state.chat_history.append(user_msg)

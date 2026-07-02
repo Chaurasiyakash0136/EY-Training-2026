@@ -1,12 +1,14 @@
 # src/llm/llm_factory.py
 # ============================================================
-# LLM Factory with Gemini → OpenAI automatic fallback.
+# LLM Factory — 3-tier fallback chain
 #
-# BUG FIX: Removed @lru_cache on provider instances.
-# The old code used lru_cache(maxsize=1) which baked in the
-# provider at first call. This caused settings changes to be
-# silently ignored. Now providers are module-level singletons
-# that are only instantiated when first needed.
+# PRIMARY:  Groq (llama-3.3-70b) — fastest, free 14,400 req/day
+# SECOND:   OpenAI (gpt-4o-mini) — reliable, paid
+# THIRD:    Gemini (gemini-2.0-flash) — backup, free tier
+#
+# If Groq quota is exhausted → auto-switches to OpenAI
+# If OpenAI also fails → auto-switches to Gemini
+# All failures are logged in LangSmith as warnings
 # ============================================================
 from __future__ import annotations
 from langchain_core.embeddings import Embeddings
@@ -20,12 +22,13 @@ logger = get_logger(__name__)
 _FALLBACK_SIGNALS = (
     "quota", "rate", "limit", "429", "resource_exhausted",
     "resourceexhausted", "unavailable", "overloaded", "timeout",
-    "deadline", "503", "500", "internal",
+    "deadline", "503", "500", "internal", "exceeded",
 )
 
-# Module-level provider cache (reset when needed)
-_chat_provider_cache    = None
-_fallback_provider_cache = None
+# Module-level provider cache
+_chat_provider_cache      = None
+_fallback_provider_cache  = None
+_fallback2_provider_cache = None
 _embedding_provider_cache = None
 
 
@@ -38,7 +41,12 @@ def _is_quota_error(exc: Exception) -> bool:
 def _make_provider(key: str):
     from src.llm.openai_provider import OpenAIProvider
     from src.llm.gemini_provider  import GeminiProvider
-    registry = {"openai": OpenAIProvider, "gemini": GeminiProvider}
+    from src.llm.groq_provider    import GroqProvider
+    registry = {
+        "openai": OpenAIProvider,
+        "gemini": GeminiProvider,
+        "groq":   GroqProvider,
+    }
     if key not in registry:
         raise ValueError(f"Unknown provider '{key}'. Available: {list(registry.keys())}")
     provider = registry[key]()
@@ -54,10 +62,19 @@ def _get_chat_provider():
 
 
 def _get_fallback_provider():
+    """Second provider — OpenAI"""
     global _fallback_provider_cache
     if _fallback_provider_cache is None:
         _fallback_provider_cache = _make_provider("openai")
     return _fallback_provider_cache
+
+
+def _get_fallback2_provider():
+    """Third provider — Gemini"""
+    global _fallback2_provider_cache
+    if _fallback2_provider_cache is None:
+        _fallback2_provider_cache = _make_provider("gemini")
+    return _fallback2_provider_cache
 
 
 def _get_embedding_provider():
@@ -68,49 +85,70 @@ def _get_embedding_provider():
 
 
 def clear_provider_cache() -> None:
-    """Call this to force re-initialisation (e.g. after settings change)."""
-    global _chat_provider_cache, _fallback_provider_cache, _embedding_provider_cache
+    global _chat_provider_cache, _fallback_provider_cache
+    global _fallback2_provider_cache, _embedding_provider_cache
     _chat_provider_cache      = None
     _fallback_provider_cache  = None
+    _fallback2_provider_cache = None
     _embedding_provider_cache = None
     logger.info("LLM provider cache cleared.")
 
 
 def invoke_with_fallback(messages: list) -> str:
     """
-    Invoke the LLM with automatic Gemini → OpenAI fallback.
-    Returns the response content string.
+    Invoke LLM with automatic 3-tier fallback:
+    Groq → OpenAI → Gemini
 
-    This is the RECOMMENDED way to call the LLM throughout the app.
+    Each provider is tried in order. If quota/rate limit is hit,
+    the next provider is tried automatically. All fallbacks are
+    logged as warnings so you can see them in LangSmith.
     """
-    # Try primary provider (Gemini)
-    try:
-        llm      = _get_chat_provider().get_chat_model()
-        response = llm.invoke(messages)
-        return response.content.strip()
-    except Exception as primary_exc:
-        if _is_quota_error(primary_exc) and settings.LLM_PROVIDER == "gemini":
-            logger.warning(
-                "Gemini quota/rate error: %s — switching to OpenAI fallback.",
-                primary_exc,
-            )
-            try:
-                llm_fallback = _get_fallback_provider().get_chat_model()
-                response     = llm_fallback.invoke(messages)
-                logger.info("OpenAI fallback succeeded.")
-                return response.content.strip()
-            except Exception as fallback_exc:
-                logger.error(
-                    "Both Gemini and OpenAI failed. Gemini: %s | OpenAI: %s",
-                    primary_exc,
-                    fallback_exc,
+    providers_to_try = []
+
+    # Build fallback chain based on primary provider
+    primary = settings.LLM_PROVIDER
+    if primary == "groq":
+        providers_to_try = [
+            ("groq",   _get_chat_provider),
+            ("openai", _get_fallback_provider),
+            ("gemini", _get_fallback2_provider),
+        ]
+    elif primary == "openai":
+        providers_to_try = [
+            ("openai", _get_chat_provider),
+            ("gemini", _get_fallback_provider),
+        ]
+    else:  # gemini
+        providers_to_try = [
+            ("gemini", _get_chat_provider),
+            ("openai", _get_fallback_provider),
+        ]
+
+    last_exc = None
+    for provider_name, get_provider_fn in providers_to_try:
+        try:
+            llm      = get_provider_fn().get_chat_model()
+            response = llm.invoke(messages)
+            if provider_name != primary:
+                logger.info("✅ %s fallback succeeded.", provider_name)
+            return response.content.strip()
+        except Exception as exc:
+            last_exc = exc
+            if _is_quota_error(exc):
+                logger.warning(
+                    "⚠️  %s quota/rate error: %s — trying next provider.",
+                    provider_name, str(exc)[:120],
                 )
-                raise RuntimeError(
-                    f"Both AI providers failed.\n"
-                    f"Gemini error: {primary_exc}\n"
-                    f"OpenAI error: {fallback_exc}"
-                ) from fallback_exc
-        raise
+                continue
+            else:
+                # Non-quota error (bad API key, network, etc.) — raise immediately
+                raise
+
+    # All providers exhausted
+    raise RuntimeError(
+        f"All LLM providers failed (tried: {[p for p, _ in providers_to_try]}).\n"
+        f"Last error: {last_exc}"
+    ) from last_exc
 
 
 def get_embeddings() -> Embeddings:
