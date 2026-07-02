@@ -312,13 +312,21 @@ Credit-Risk-Intelligence-Platform/
 
 | Metric | Value |
 |---|---|
-| Lines of Python code | **10,491** |
+| **Total lines of code (Python + Docs)** | **11,625** |
+| Python lines | **10,491** |
 | Python files | **77** |
-| Unit tests | **96** |
-| Test profiles | **6** |
+| `src/` — Core backend (agents, LLM, auth, retrieval) | 4,696 lines |
+| `ui/` — All Streamlit pages + dark theme | 3,660 lines |
+| `tests/` — Unit tests + evaluation framework | 1,270 lines |
+| `config/` — Settings + Pydantic models | 178 lines |
+| `app.py` — Main entry point | 128 lines |
+| Docs + YAML + Config files | 1,134 lines |
+| Unit tests passing | **96** |
+| Test profiles (fictional customers) | **6** |
 | Indian cities in retirement planner | **40** |
-| LLM providers with fallback | **3** |
-| Hallucination score (bad profile) | **0.217** |
+| LLM providers with automatic fallback | **3** |
+| Hallucination score (bad credit profile) | **0.217** |
+| Hallucination reduction vs baseline | **62%** (from 0.58) |
 
 ---
 
