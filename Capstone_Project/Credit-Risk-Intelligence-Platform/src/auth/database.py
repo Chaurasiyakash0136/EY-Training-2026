@@ -2,21 +2,30 @@
 # ============================================================
 # SQLite-backed user store.
 #
-# Why SQLite + JWT instead of Supabase/Auth0/Firebase/Clerk:
-#   - Zero external account/signup needed to run this project
-#   - Zero ongoing cost, zero network dependency for login
-#   - Fully production-upgradable later: swap this file's functions
-#     for calls to a managed auth provider without touching any
-#     other file, since every other module only calls functions
-#     in src/auth/service.py, never this database layer directly.
+# Database path is environment-aware:
+# - Local development: data/auth_db/users.db (relative)
+# - Azure App Service: /home/data/auth_db/users.db
+#   Azure mounts /home as PERSISTENT storage across deployments.
+#   This means user accounts survive container restarts and
+#   new deployments — accounts are never lost when you push code.
+#   Requires WEBSITES_ENABLE_APP_SERVICE_STORAGE=true on Azure.
 # ============================================================
 from __future__ import annotations
+import os
 import sqlite3
 from contextlib import contextmanager
 from pathlib import Path
 from datetime import datetime, timezone
 
-DB_PATH = Path("data/auth_db/users.db")
+# Use /home/data on Azure (persistent across deployments)
+# Use local data/ folder for development
+_AZURE_HOME = Path("/home")
+if _AZURE_HOME.exists() and os.environ.get("WEBSITE_SITE_NAME"):
+    # Running on Azure App Service — use persistent /home mount
+    DB_PATH = _AZURE_HOME / "data" / "auth_db" / "users.db"
+else:
+    # Local development
+    DB_PATH = Path("data/auth_db/users.db")
 
 
 def _ensure_db_dir() -> None:
