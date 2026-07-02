@@ -20,9 +20,13 @@ logger = get_logger(__name__)
 
 # Quota / rate-limit error signals
 _FALLBACK_SIGNALS = (
+    # Quota and rate limit errors
     "quota", "rate", "limit", "429", "resource_exhausted",
     "resourceexhausted", "unavailable", "overloaded", "timeout",
     "deadline", "503", "500", "internal", "exceeded",
+    # Authentication errors — invalid/expired API key should also fallback
+    "401", "authentication", "invalid api", "invalid_api",
+    "unauthorized", "api key", "apikey", "not found", "404",
 )
 
 # Module-level provider cache
