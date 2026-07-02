@@ -13,6 +13,12 @@ from src.auth import service
 from src.auth.models import AccountType, UserSession
 from ui.theme import C
 
+try:
+    from langsmith import trace as _ls_trace
+    _TRACING = True
+except ImportError:
+    _TRACING = False
+
 
 def _account_type_badge(tab_key: str) -> None:
     """
@@ -95,7 +101,15 @@ def _login_form() -> UserSession | None:
             st.error("Please enter both email and password.")
             return None
         try:
-            token, session = service.login(email, password)
+            if _TRACING:
+                with _ls_trace(
+                    name="auth.login_attempt",
+                    run_type="chain",
+                    metadata={"component": "auth_ui", "step": "login", "email": email},
+                ):
+                    token, session = service.login(email, password)
+            else:
+                token, session = service.login(email, password)
             st.session_state["auth_token"]   = token
             st.session_state["user_session"] = session
             st.success(f"Welcome back, {session.full_name}!")
@@ -141,11 +155,24 @@ def _register_form() -> UserSession | None:
             st.error("Password must be at least 8 characters.")
             return None
         try:
-            token = service.register(
-                email, password, full_name, account_type,
-                institution_name or None,
-            )
-            _, session = service.login(email, password)
+            if _TRACING:
+                with _ls_trace(
+                    name="auth.register_attempt",
+                    run_type="chain",
+                    metadata={"component": "auth_ui", "step": "register",
+                              "account_type": account_type},
+                ):
+                    token = service.register(
+                        email, password, full_name, account_type,
+                        institution_name or None,
+                    )
+                    _, session = service.login(email, password)
+            else:
+                token = service.register(
+                    email, password, full_name, account_type,
+                    institution_name or None,
+                )
+                _, session = service.login(email, password)
             st.session_state["auth_token"]   = token
             st.session_state["user_session"] = session
             st.success(f"Account created! Welcome, {full_name}.")

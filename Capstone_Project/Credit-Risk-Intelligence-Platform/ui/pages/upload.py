@@ -9,6 +9,12 @@ from src.orchestrator.orchestrator import AgentOrchestrator
 from src.models.schemas import DocumentMetadata, PlatformState, ProcessingStatus
 from ui.theme import C, badge, empty_state, info_box, page_header, section_header, step_tracker
 
+try:
+    from langsmith import trace as _ls_trace
+    _TRACING = True
+except ImportError:
+    _TRACING = False
+
 _ACCEPTED_TYPES = ["pdf"]
 _MAX_FILE_MB    = 50
 _MAX_FILE_BYTES = _MAX_FILE_MB * 1024 * 1024
@@ -243,7 +249,21 @@ def _process(files, state: PlatformState, orchestrator: AgentOrchestrator) -> No
         prog.progress(85, text="Generating combined analysis & questions…")
         msg.info("🤖 Building combined summary and intelligent questions…")
         try:
-            orchestrator.refresh_intelligence(state)
+            if _TRACING:
+                session = st.session_state.get("user_session")
+                with _ls_trace(
+                    name="document_upload_complete",
+                    run_type="chain",
+                    metadata={
+                        "component": "upload_ui",
+                        "files_processed": processed_ok,
+                        "user": getattr(session, "email", "unknown"),
+                        "account_type": getattr(session, "account_type", "unknown"),
+                    },
+                ):
+                    orchestrator.refresh_intelligence(state)
+            else:
+                orchestrator.refresh_intelligence(state)
             if state.account_type == "institution":
                 orchestrator.generate_institution_summary(state)
         except Exception as exc:  # noqa: BLE001

@@ -84,6 +84,8 @@ class AgentOrchestrator:
         state.institution_summary = summary
         return summary
 
+    @_traceable(name="document_processing", run_type="chain",
+                metadata={"component": "orchestrator", "step": "document_processing"})
     def refresh_intelligence(self, state: PlatformState) -> None:
         """
         Generate combined summary + validated dynamic questions.
