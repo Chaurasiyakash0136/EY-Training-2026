@@ -1,6 +1,3 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-
 name: Build and deploy container app to Azure Web App - creditriskplatform
 
 on:
@@ -13,7 +10,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: read #This is required for actions/checkout
+      contents: read
 
     steps:
       - uses: actions/checkout@v4
@@ -24,7 +21,7 @@ jobs:
       - name: Log in to container registry
         uses: docker/login-action@v2
         with:
-          registry: creditriskakash7272.azurecr.io/
+          registry: creditriskakash7272.azurecr.io
           username: ${{ secrets.AZUREAPPSERVICE_CONTAINERUSERNAME_A3F60C2E29BF4F77B7DA8946841C104D }}
           password: ${{ secrets.AZUREAPPSERVICE_CONTAINERPASSWORD_4A3E01B657B241A89CAB9823662AB519 }}
 
@@ -32,22 +29,49 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           context: ./Capstone_Project/Credit-Risk-Intelligence-Platform
-          push: true
-          tags: creditriskakash7272.azurecr.io/${{ secrets.AZUREAPPSERVICE_CONTAINERUSERNAME_A3F60C2E29BF4F77B7DA8946841C104D }}/credit-risk-platform:${{ github.sha }}
           file: ./Capstone_Project/Credit-Risk-Intelligence-Platform/infra/Dockerfile
+          push: true
+          tags: creditriskakash7272.azurecr.io/credit-risk-platform:${{ github.sha }}
 
   deploy:
     runs-on: ubuntu-latest
-    
     needs: build
-    
+
     steps:
-      
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
         with:
           app-name: 'creditriskplatform'
           slot-name: 'Production'
-          images: 'creditriskakash7272.azurecr.io/${{ secrets.AZUREAPPSERVICE_CONTAINERUSERNAME_A3F60C2E29BF4F77B7DA8946841C104D }}/credit-risk-platform:${{ github.sha }}'
+          images: 'creditriskakash7272.azurecr.io/credit-risk-platform:${{ github.sha }}'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_D3F2EADFC46E401EB0FAFB5189DC7554 }}
+
+      - name: Set Azure environment variables
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        continue-on-error: true
+
+      - name: Configure app settings
+        run: |
+          az webapp config appsettings set \
+            --resource-group rg-azuser7272_mml.local-QgomF \
+            --name creditriskplatform \
+            --settings \
+            LLM_PROVIDER="openai" \
+            OPENAI_API_KEY="${{ secrets.APP_OPENAI_API_KEY }}" \
+            GROQ_API_KEY="${{ secrets.APP_GROQ_API_KEY }}" \
+            GEMINI_API_KEY="${{ secrets.APP_GEMINI_API_KEY }}" \
+            PINECONE_API_KEY="${{ secrets.APP_PINECONE_API_KEY }}" \
+            PINECONE_INDEX_NAME="credit-risk-platform" \
+            VECTOR_STORE_PROVIDER="pinecone" \
+            JWT_SECRET_KEY="${{ secrets.APP_JWT_SECRET_KEY }}" \
+            WEBSITES_PORT="8501" \
+            LANGCHAIN_TRACING_V2="true" \
+            LANGCHAIN_API_KEY="${{ secrets.APP_LANGCHAIN_API_KEY }}" \
+            LANGCHAIN_PROJECT="credit-risk-platform" \
+            WEBSITES_ALWAYS_ON="true"
+        continue-on-error: true
