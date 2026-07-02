@@ -34,7 +34,7 @@ class Settings(BaseSettings):
     # groq   = Groq (PRIMARY — fastest, generous free tier, no credit card)
     # openai = OpenAI GPT-4o (SECOND fallback)
     # gemini = Google Gemini (THIRD fallback)
-    LLM_PROVIDER: Literal["openai", "gemini", "groq"] = "groq"
+    LLM_PROVIDER: Literal["openai", "gemini", "groq"] = "openai"
 
     # ── Embedding Provider (vector search) ───────────────────
     EMBEDDING_PROVIDER: Literal["openai", "gemini"] = "openai"

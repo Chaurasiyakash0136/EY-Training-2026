@@ -66,15 +66,15 @@ def _get_chat_provider():
 
 
 def _get_fallback_provider():
-    """Second provider — OpenAI"""
+    """Second provider — Groq (when primary is OpenAI)"""
     global _fallback_provider_cache
     if _fallback_provider_cache is None:
-        _fallback_provider_cache = _make_provider("openai")
+        _fallback_provider_cache = _make_provider("groq")
     return _fallback_provider_cache
 
 
 def _get_fallback2_provider():
-    """Third provider — Gemini"""
+    """Third provider — Gemini (final backup)"""
     global _fallback2_provider_cache
     if _fallback2_provider_cache is None:
         _fallback2_provider_cache = _make_provider("gemini")
@@ -109,23 +109,29 @@ def invoke_with_fallback(messages: list) -> str:
     """
     providers_to_try = []
 
-    # Build fallback chain based on primary provider
+    # Fallback chain: OpenAI (primary) → Groq → Gemini
+    # Order chosen because:
+    # - OpenAI: most reliable, best quality
+    # - Groq: fastest, free tier, good fallback
+    # - Gemini: final backup
     primary = settings.LLM_PROVIDER
-    if primary == "groq":
+    if primary == "openai":
+        providers_to_try = [
+            ("openai", _get_chat_provider),
+            ("groq",   _get_fallback_provider),
+            ("gemini", _get_fallback2_provider),
+        ]
+    elif primary == "groq":
         providers_to_try = [
             ("groq",   _get_chat_provider),
             ("openai", _get_fallback_provider),
             ("gemini", _get_fallback2_provider),
         ]
-    elif primary == "openai":
-        providers_to_try = [
-            ("openai", _get_chat_provider),
-            ("gemini", _get_fallback_provider),
-        ]
     else:  # gemini
         providers_to_try = [
             ("gemini", _get_chat_provider),
             ("openai", _get_fallback_provider),
+            ("groq",   _get_fallback2_provider),
         ]
 
     last_exc = None
