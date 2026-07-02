@@ -55,7 +55,7 @@ Upload any financial PDF (bank statement, annual report, ITR, balance sheet) and
 | 🔍 **Risk Analysis** | Credit risk score (0–100), strengths, red flags |
 | 💡 **AI Recommendations** | Personalised action plan, safer loan options |
 | 🏖️ **Retirement Planner** | Corpus calculation, SIP requirement, feasibility |
-| 💬 **AI Chat** | Ask anything about your documents — RAG-grounded answers |
+| 💬 **AI Chat**  | Ask anything about your documents — RAG-grounded answers |
 
 ---
 
@@ -662,5 +662,6 @@ retirement planning (Phase 4), 4 fictional test customer profiles (Phase 3).
 - 🔑 OpenAI keys: https://platform.openai.com/api-keys
 - 📊 LangSmith: https://smith.langchain.com
 - 🗄️ Pinecone: https://app.pinecone.io
-#   U p d a t e d  
+#   U p d a t e d 
+ 
  
