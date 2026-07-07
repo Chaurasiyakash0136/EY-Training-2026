@@ -1,0 +1,18 @@
+============================================================
+LOAD TEST RESULTS � 20 concurrent users x 3 questions each
+Run time: 2026-07-07 16:37:37
+============================================================
+Total requests:        60
+Successful:            60
+Failed:                0
+Failure rate:          0.0%
+Total wall-clock time: 33.53s
+Throughput:            1.79 requests/sec
+
+Response time (successful requests only):
+  min:    3.06s
+  avg:    5.78s
+  median: 4.54s
+  p95:    11.05s
+  max:    21.12s
+============================================================
